@@ -1,20 +1,29 @@
 import React, {useState, useEffect, useRef} from 'react';
+import 'animate.css';
 
-function Cheap(){
+function Cheap() {
+    const [cards, setCards] = useState([1, 2, 3, 4, 1, 2, 3, 4, 5]);
+    const elementRefs = useRef(Array(9).fill(null).map(() => React.createRef()));
 
-    const [cards, setCards] = useState([]);
+    function showValue(index) {
+        const element = elementRefs.current[index].current; 
+        element.classList.add('animate__animated', 'animate__flipInY');
+        element.innerHTML = cards[index];
+    }
 
-    return(
+    return (
         <div className="container-cheap">
-            <div className="card">0</div>
-            <div className="card">1</div>
-            <div className="card">2</div>
-            <div className="card">3</div>
-            <div className="card">4</div>
-            <div className="card">5</div>
-            <div className="card">6</div>
-            <div className="card">7</div>
-            <div className="card">8</div>
+            {elementRefs.current.map((ref, index) => (
+                <div 
+                    key={index} 
+                    ref={ref} 
+                    id={index} 
+                    className="card" 
+                    onClick={() => showValue(index)}
+                >
+
+                </div>
+            ))}
         </div>
     );
 }

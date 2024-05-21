@@ -8,6 +8,7 @@ body{
     flex-wrap: wrap;
     padding: 10px;
 
+    max-width: 540px;
     height: 400px;
 }
 
@@ -21,4 +22,8 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
+
+    overflow: hidden;
+    max-width: 160px;
+    height: 120px;
   }
