@@ -1,0 +1,24 @@
+body{
+    display: flex;
+    justify-content: center;
+}
+
+.container-cheap {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+
+    height: 400px;
+}
+
+.card {
+    flex: 1 1 calc(33.333% - 20px);
+    margin: 10px;
+    background-color: lightgray;
+    padding: 20px;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
