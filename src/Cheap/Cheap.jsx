@@ -1,68 +1,123 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import 'animate.css';
 
+// Função para embaralhar um array
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
 function Cheap() {
-    const [cards, setCards] = useState([1, 2, 3, 4, 1, 2, 3, 4, 5]);
+
+    const generateCards = () => {
+        let baseNumbers = [1, 2, 3, 4];
+        let pairs = [...baseNumbers, ...baseNumbers];
+        pairs.push(5);
+        return shuffle(pairs);
+    };
+
+    const [cards, setCards] = useState(generateCards());
     const [cardsSelecteds, setCardsSelecteds] = useState([]);
     const [hits, setHits] = useState(0);
-    
+    const [resetCards, setResetCards] = useState(false);
+    const winRef = useRef(null);
+
     const elementRefs = useRef(Array(9).fill(null).map(() => React.createRef()));
-    
+
     function showValue(index) {
-        const card = elementRefs.current[index].current; 
+        if (cardsSelecteds.length === 2) {
+            return;
+        }
+
+        const card = elementRefs.current[index].current;
         card.classList.add('animate__animated', 'animate__flipInY');
         card.innerHTML = cards[index];
 
-        setCardsSelecteds(prevCardsSelecteds => [...prevCardsSelecteds, index]);
+        const newCardsSelecteds = [...cardsSelecteds, index];
+        setCardsSelecteds(newCardsSelecteds);
+
+        if (newCardsSelecteds.length === 2) {
+            setResetCards(true);
+        }
     }
 
-    function validateCard(){
-        if (cards[cardsSelecteds[0]] === cards[cardsSelecteds[1]]) {
-            setHits(prevHits => prevHits + 1);
-        } else {
-            cardsSelecteds.forEach((cardSelected) => {
-                const element = elementRefs.current[cardSelected].current;
-                element.classList.remove('animate__animated', 'animate__flipInY');
-                
+    function resetSelectedCards() {
+        const [firstIndex, secondIndex] = cardsSelecteds;
+        const firstElement = elementRefs.current[firstIndex].current;
+        const secondElement = elementRefs.current[secondIndex].current;
 
-                setTimeout(() => {
-                    element.innerHTML = '';
-                    element.classList.add('animate__animated', 'animate__flipInY');
-                    
-                    setTimeout(() => {
-                        element.classList.remove('animate__animated', 'animate__flipInY');
-                    }, 500);
-                }, 500);
-            })
-        }
-        setCardsSelecteds([]);
+        firstElement.classList.add('animate__flipOutY');
+        secondElement.classList.add('animate__flipOutY');
+
+        setTimeout(() => {
+            firstElement.classList.remove('animate__animated', 'animate__flipInY', 'animate__flipOutY');
+            firstElement.innerHTML = '';
+            secondElement.classList.remove('animate__animated', 'animate__flipInY', 'animate__flipOutY');
+            secondElement.innerHTML = '';
+
+            setCardsSelecteds([]);
+            setResetCards(false);
+        }, 850);
     }
 
     useEffect(() => {
-
-        const timeoutID = setTimeout(() => {
-            if(cardsSelecteds.length == 2) {
-                validateCard();
+        if (resetCards) {
+            if (cards[cardsSelecteds[0]] === cards[cardsSelecteds[1]]) {
+                setHits(prevHits => prevHits + 1);
+                setCardsSelecteds([]);
+                setResetCards(false);
+            } else {
+                resetSelectedCards();
             }
-          }, 850);
-          
-          return () => clearTimeout(timeoutID); 
-    }, [cardsSelecteds])
+        }
+    }, [resetCards]);
+
+    useEffect(() => {
+        if (hits === 4) {
+            if (winRef.current) {
+                winRef.current.style.display = 'block';
+            }
+        }
+    }, [hits]);
+
+    const resetGame = () => {
+        setCards(generateCards());
+        setCardsSelecteds([]);
+        setHits(0);
+        setResetCards(false);
+        elementRefs.current.forEach(ref => {
+            if (ref.current) {
+                ref.current.innerHTML = '';
+                ref.current.classList.remove('animate__animated', 'animate__flipInY', 'animate__flipOutY');
+            }
+        });
+        if (winRef.current) {
+            winRef.current.style.display = 'none';
+        }
+    };
 
     return (
-        <div className="container-cheap">
-            {elementRefs.current.map((ref, index) => (
-                <div 
-                    key={index} 
-                    ref={ref} 
-                    id={index} 
-                    className="card" 
-                    onClick={() => showValue(index)}
-                >
-
-                </div>
-            ))}
-        </div>
+        <>
+            <div ref={winRef} className='winMessage displayNone'>
+                Win!
+                <button className="resetButton" onClick={resetGame}>Reset Game</button>
+            </div>
+            <div className="container-cheap">
+                {elementRefs.current.map((ref, index) => (
+                    <div
+                        key={index}
+                        ref={ref}
+                        id={index}
+                        className="card"
+                        onClick={() => showValue(index)}
+                    >
+                    </div>
+                ))}
+            </div>
+        </>
     );
 }
 
